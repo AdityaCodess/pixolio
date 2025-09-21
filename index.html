@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aditya's Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Correct THREE.JS Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+
+<body class="bg-slate-900 text-slate-300 font-mono flex flex-col h-screen">
+
+    <header class="bg-slate-800 shadow-lg z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-xl font-bold text-teal-400">Aditya Bhalla</div>
+            <div class="flex space-x-2 md:space-x-6 text-sm md:text-base">
+                <a href="#home" class="nav-link active-link">Home</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="#credits" class="nav-link">Credits</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow overflow-auto bg-dots">
+        <!-- Home Section (The Game) -->
+        <section id="home" class="content-section h-full flex items-center justify-center">
+            <div id="game-container" class="relative w-full h-full flex items-center justify-center">
+                <canvas id="gameCanvas"></canvas>
+
+                <!-- Modals and UI elements for the game -->
+                <div id="introModal"
+                    class="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-20">
+                    <div class="text-center p-8 bg-gray-900 rounded-lg shadow-2xl pixel-border">
+                        <h1 id="loadingTitle" class="text-3xl font-bold mb-4 text-teal-400">LOADING ASSETS...</h1>
+                        <p class="mb-6 text-slate-400">Welcome to my interactive portfolio!</p>
+                        <button id="startButton" disabled
+                            class="bg-gray-600 text-white font-bold py-2 px-6 rounded transition-colors duration-300 cursor-not-allowed">
+                            LOADING...
+                        </button>
+                    </div>
+                </div>
+
+                <div id="infoModal"
+                    class="hidden absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-20 p-4">
+                    <div class="w-full max-w-2xl bg-gray-900 rounded-lg shadow-2xl pixel-border relative p-6">
+                        <button id="closeModalButton"
+                            class="absolute top-2 right-2 text-slate-400 hover:text-white text-3xl font-bold">&times;</button>
+                        <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-teal-400"></h2>
+                        <div id="modalContent" class="text-slate-300"></div>
+                    </div>
+                </div>
+
+                <div id="interactionPrompt"
+                    class="hidden absolute bottom-5 left-1/2 -translate-x-1/2 bg-black bg-opacity-70 px-4 py-2 rounded-md text-sm">
+                    Press <span class="font-bold text-yellow-300">E</span> to interact
+                </div>
+
+                <!-- Easter Egg Terminal -->
+                <div id="terminalModal"
+                    class="hidden absolute inset-0 bg-black bg-opacity-95 z-30 p-4 flex flex-col font-mono text-green-400">
+                    <div class="flex-grow overflow-y-auto" id="terminalOutput"></div>
+                    <!-- 3D CAT CONTAINER -->
+                    <div id="cat-container"
+                        class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-black/50 rounded pointer-events-none">
+                    </div>
+                    <div class="flex items-center">
+                        <span>> </span>
+                        <div id="terminalCursor" class="w-2 h-4 bg-green-400 ml-1"></div>
+                    </div>
+                    <button id="closeTerminalButton"
+                        class="absolute top-2 right-4 text-white font-bold text-xl">X</button>
+                </div>
+
+                <!-- Screen Transition Overlay -->
+                <div id="transitionOverlay" class="absolute inset-0 bg-black z-40 pointer-events-none opacity-0"></div>
+
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="content-section hidden-section p-4 md:p-8">
+            <div class="content-card max-w-4xl mx-auto">
+                <h1 class="text-2xl md:text-3xl text-slate-200 mb-6 leading-relaxed">Yo, I’m <span
+                        class="text-teal-400 font-bold">Aditya Bhalla</span> 👋 — coder, game dev, AI tinkerer, and
+                    professional bug-fixer (sometimes they fix themselves ngl).</h1>
+
+                <div class="text-slate-400 space-y-4 leading-relaxed">
+                    <p class="text-lg">I build stuff across every possible lane:</p>
+
+                    <ul class="list-none space-y-3 pl-2">
+                        <li><span class="font-bold text-slate-200">⚡ AI & Cybersecurity</span> → Predicting cyberattacks
+                            (AegisGRID), securing drone swarms (Airborne Ledger), and catching sus files (ForensiX).
+                        </li>
+                        <li><span class="font-bold text-slate-200">🤖 Personal AI Squad</span> → NeuraNest HubAI with a
+                            tutor, therapist, startup sidekick, planner, and even a “text-your-crush” AI. (Yes, I
+                            basically made an AI friend group).</li>
+                        <li><span class="font-bold text-slate-200">🌱 Sustainability Tech</span> → GreenGaze, because
+                            saving the planet is cooler than ignoring it.</li>
+                        <li><span class="font-bold text-slate-200">🎮 Games</span> → Rage-fueled creations like
+                            BobbyTheBlob (don’t rage quit, I dare you).</li>
+                    </ul>
+
+                    <div class="pt-4">
+                        <h3 class="text-2xl font-bold text-teal-400 mb-3">💡 What drives me?</h3>
+                        <ul class="list-none space-y-2 pl-2">
+                            <li>Chaos + Caffeine ☕</li>
+                            <li>Memes as motivation</li>
+                            <li>Curiosity spirals that start with “what if I…” and end with an actual project</li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-4">
+                        <h3 class="text-2xl font-bold text-teal-400 mb-3">🛠️ Philosophy:</h3>
+                        <p>Build things that are useful, chaotic, or just plain fun. Bonus points if it makes someone
+                            laugh and solves a problem.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="content-section hidden-section p-4 md:p-8">
+            <div class="content-card max-w-3xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-teal-400 mb-4">Get In Touch</h1>
+                <p class="text-lg text-slate-300 leading-relaxed max-w-xl mx-auto">
+                    I'm always open to discussing new projects, creative ideas, or opportunities to be part of an
+                    ambitious team. Feel free to reach out!
+                </p>
+                <div class="mt-8">
+                    <a href="mailto:your.email@example.com"
+                        class="inline-block bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 duration-300">
+                        Say Hello
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Credits Section -->
+        <section id="credits" class="content-section hidden-section p-4 md:p-8">
+            <div class="content-card max-w-3xl mx-auto">
+                <h1 class="text-4xl md:text-5xl font-bold text-teal-400 mb-4">Credits</h1>
+                <p class="text-lg text-slate-300 leading-relaxed">
+                    The pixel art assets used in the "Home" section of this portfolio were sourced from the wonderful
+                    community at <a href="https://opengameart.org" target="_blank"
+                        class="text-teal-400 font-bold hover:underline">opengameart.org</a>. A huge thank you to the
+                    talented artists who share their work for others to use.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Mobile Controls for Game -->
+    <div id="mobile-controls" class="hidden"></div>
+    <button id="action-button" class="hidden"></button>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
