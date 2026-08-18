@@ -59,10 +59,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const terminalOutput = document.getElementById('terminalOutput');
     const catContainer = document.getElementById('cat-container');
     const transitionOverlay = document.getElementById('transitionOverlay');
+    
+    // --- NEW: Elements for Upgrades ---
+    const howToPlayToast = document.getElementById('howToPlayToast');
+    const mobileControlsContainer = document.getElementById('mobile-controls-container');
 
     // --- Game State Variables ---
     const TILE_SIZE = 16;
-    const playerSpeed = 2;
+    
+    // NEW: Frame-Rate Independent Speed (120 pixels per second instead of 2 per frame)
+    const playerSpeedPixelsPerSec = 120;
+    let lastTime = 0;
 
     let player = { x: TILE_SIZE * 5, y: TILE_SIZE * 5, width: TILE_SIZE * 0.8, height: TILE_SIZE, isMoving: false, animationFrame: 0, frameCounter: 0, frameDelay: 10 };
     let keys = {};
@@ -70,7 +77,8 @@ window.addEventListener('DOMContentLoaded', () => {
     let gameRunning = false;
     let currentScene = 0;
     let currentPlayingSound = null;
-    
+    let tutorialDismissed = false; // Tracks if we should hide the toast
+
     // --- Three.js Variables ---
     let threeScene, threeCamera, threeRenderer, catModel, catAnimationId;
 
@@ -154,8 +162,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const center = box.getCenter(new THREE.Vector3());
             catModel.position.sub(center);
 
-            // --- ADJUSTED SCALE ---
-            catModel.scale.set(5, 5, 5);
+            catModel.scale.set(5,5,5);
 
             threeScene.add(catModel);
             animateCat();
@@ -167,8 +174,7 @@ window.addEventListener('DOMContentLoaded', () => {
         function animateCat() {
             catAnimationId = requestAnimationFrame(animateCat);
             if (catModel) {
-                 // --- ADJUSTED ROTATION SPEED ---
-                catModel.rotation.y += 0.08;
+                catModel.rotation.y += 0.1;
             }
             if (threeRenderer && threeScene && threeCamera) {
                 threeRenderer.render(threeScene, threeCamera);
@@ -197,11 +203,41 @@ window.addEventListener('DOMContentLoaded', () => {
     function drawScene() { const scene = scenes[currentScene]; for (let y = 0; y < scene.map.length; y++) { for (let x = 0; x < scene.map[y].length; x++) { const tile = scene.map[y][x]; const sprite = tile === 1 ? sprites.wall : sprites.floor; if (sprite) ctx.drawImage(sprite, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE); } } scene.objects.forEach(obj => { const sprite = sprites[obj.name]; if (sprite) ctx.drawImage(sprite, obj.x, obj.y, obj.width, obj.height); }); }
     function drawPlayer() { if (sprites.player) { const frameX = player.animationFrame * (sprites.player.width / 2); ctx.drawImage(sprites.player, frameX, 0, sprites.player.width / 2, sprites.player.height, player.x, player.y, player.width, player.height); } }
     function checkCollision(x, y) { const scene = scenes[currentScene]; const mapWidth = scene.map[0].length * TILE_SIZE; const mapHeight = scene.map.length * TILE_SIZE; if (x < TILE_SIZE || x + player.width > mapWidth - TILE_SIZE || y < TILE_SIZE || y + player.height > mapHeight - TILE_SIZE) { return true; } const collisionObjects = scene.objects.filter(obj => obj.type === 'project'); for (const obj of collisionObjects) { if (x < obj.x + obj.width && x + player.width > obj.x && y < obj.y + obj.height && y + player.height > obj.y) { return true; } } return false; }
-    function updatePlayerPosition() { let newX = player.x; let newY = player.y; player.isMoving = false; if (keys['ArrowUp'] || keys['w']) { newY -= playerSpeed; player.isMoving = true; } if (keys['ArrowDown'] || keys['s']) { newY += playerSpeed; player.isMoving = true; } if (keys['ArrowLeft'] || keys['a']) { newX -= playerSpeed; player.isMoving = true; } if (keys['ArrowRight'] || keys['d']) { newX += playerSpeed; player.isMoving = true; } if (player.isMoving) { player.frameCounter++; if (player.frameCounter >= player.frameDelay) { player.frameCounter = 0; player.animationFrame = (player.animationFrame + 1) % 2; } } else { player.animationFrame = 0; } if (!checkCollision(newX, player.y)) player.x = newX; if (!checkCollision(player.x, newY)) player.y = newY; }
+    
+    // NEW: Delta Time added to updatePlayerPosition
+    function updatePlayerPosition(deltaTime) { 
+        let newX = player.x; 
+        let newY = player.y; 
+        player.isMoving = false; 
+        
+        // Calculate exact movement distance for this frame
+        const moveAmount = playerSpeedPixelsPerSec * deltaTime;
+
+        if (keys['ArrowUp'] || keys['w']) { newY -= moveAmount; player.isMoving = true; } 
+        if (keys['ArrowDown'] || keys['s']) { newY += moveAmount; player.isMoving = true; } 
+        if (keys['ArrowLeft'] || keys['a']) { newX -= moveAmount; player.isMoving = true; } 
+        if (keys['ArrowRight'] || keys['d']) { newX += moveAmount; player.isMoving = true; } 
+        
+        if (player.isMoving) { 
+            player.frameCounter++; 
+            if (player.frameCounter >= player.frameDelay) { 
+                player.frameCounter = 0; 
+                player.animationFrame = (player.animationFrame + 1) % 2; 
+            } 
+            dismissTutorial(); // Dismiss toast if user moves
+        } else { 
+            player.animationFrame = 0; 
+        } 
+        
+        if (!checkCollision(newX, player.y)) player.x = newX; 
+        if (!checkCollision(player.x, newY)) player.y = newY; 
+    }
+    
     function checkForInteraction() { currentInteractiveObject = null; const allObjects = scenes[currentScene].objects; for (const obj of allObjects) { const zonePadding = obj.type === 'door' ? TILE_SIZE / 4 : TILE_SIZE / 2; const interactionZone = { x: obj.x - zonePadding, y: obj.y - zonePadding, width: obj.width + (zonePadding * 2), height: obj.height + (zonePadding * 2) }; if (player.x < interactionZone.x + interactionZone.width && player.x + player.width > interactionZone.x && player.y < interactionZone.y + interactionZone.height && player.y + player.height > interactionZone.y) { currentInteractiveObject = obj; break; } } interactionPrompt.classList.toggle('hidden', !currentInteractiveObject); }
 
     function triggerInteraction() {
         if (!currentInteractiveObject) return;
+        dismissTutorial(); // Dismiss toast if user interacts
         switch (currentInteractiveObject.type) {
             case 'project': showInfoModal(currentInteractiveObject); break;
             case 'door': changeScene(currentInteractiveObject.target.scene, currentInteractiveObject.target.x, currentInteractiveObject.target.y); break;
@@ -259,17 +295,43 @@ window.addEventListener('DOMContentLoaded', () => {
         type();
     }
 
+    // --- UI Helpers ---
+    function dismissTutorial() {
+        if (!tutorialDismissed) {
+            tutorialDismissed = true;
+            howToPlayToast.style.opacity = '0';
+        }
+    }
+
     // --- Scene Transitions ---
-    function changeScene(sceneIndex, newPlayerX, newPlayerY) { gameRunning = false; transitionOverlay.style.opacity = '1'; setTimeout(() => { currentScene = sceneIndex; player.x = newPlayerX; player.y = newPlayerY; handleResize(); gameRunning = true; gameLoop(); transitionOverlay.style.opacity = '0'; }, 300); }
+    function changeScene(sceneIndex, newPlayerX, newPlayerY) { gameRunning = false; transitionOverlay.style.opacity = '1'; setTimeout(() => { currentScene = sceneIndex; player.x = newPlayerX; player.y = newPlayerY; handleResize(); gameRunning = true; lastTime = performance.now(); requestAnimationFrame(gameLoop); transitionOverlay.style.opacity = '0'; }, 300); }
     
     // --- Main Game Loop and Setup ---
-    function gameLoop() { if (!gameRunning) return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawScene(); updatePlayerPosition(); checkForInteraction(); drawPlayer(); requestAnimationFrame(gameLoop); }
+    function gameLoop(timestamp) { 
+        if (!gameRunning) return; 
+        
+        // NEW: Calculate Delta Time
+        if (!lastTime) lastTime = timestamp;
+        let deltaTime = (timestamp - lastTime) / 1000; // Convert ms to seconds
+        lastTime = timestamp;
+        
+        // Prevent massive jumps if the user switched tabs (cap at 0.1 seconds)
+        if (deltaTime > 0.1) deltaTime = 0.016; 
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height); 
+        drawScene(); 
+        updatePlayerPosition(deltaTime); 
+        checkForInteraction(); 
+        drawPlayer(); 
+        requestAnimationFrame(gameLoop); 
+    }
+    
     function handleResize() { const scene = scenes[currentScene]; if (scene) { const mapWidth = scene.map[0].length * TILE_SIZE; const mapHeight = scene.map.length * TILE_SIZE; canvas.width = mapWidth; canvas.height = mapHeight; } }
     
     function setupEventListeners() {
         window.addEventListener('keydown', e => { if (gameRunning) { keys[e.key] = true; if (e.key.toLowerCase() === 'e') triggerInteraction(); } });
         window.addEventListener('keyup', e => { keys[e.key] = false; });
-        closeModalButton.addEventListener('click', () => { infoModal.classList.add('hidden'); gameRunning = true; requestAnimationFrame(gameLoop); });
+        closeModalButton.addEventListener('click', () => { infoModal.classList.add('hidden'); gameRunning = true; lastTime = performance.now(); requestAnimationFrame(gameLoop); });
         
         closeTerminalButton.addEventListener('click', () => {
             if (currentPlayingSound) {
@@ -280,8 +342,32 @@ window.addEventListener('DOMContentLoaded', () => {
             stopCatAnimation();
             terminalModal.classList.add('hidden');
             gameRunning = true;
+            lastTime = performance.now(); // Reset time to prevent jumping
             requestAnimationFrame(gameLoop);
         });
+
+        // --- NEW: Mobile Touch Controls Setup ---
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice) {
+            mobileControlsContainer.classList.remove('hidden');
+            interactionPrompt.style.bottom = "120px"; // Push prompt up so thumb doesn't block it
+            howToPlayToast.innerHTML = '🎮 <span class="text-teal-400 font-bold">Use on-screen controls</span> to move & interact';
+
+            const bindBtn = (id, key) => {
+                const btn = document.getElementById(id);
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); if(gameRunning) keys[key] = true; });
+                btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+                btn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys[key] = false; });
+            };
+            
+            bindBtn('btn-up', 'ArrowUp');
+            bindBtn('btn-down', 'ArrowDown');
+            bindBtn('btn-left', 'ArrowLeft');
+            bindBtn('btn-right', 'ArrowRight');
+            
+            const btnAction = document.getElementById('btn-action');
+            btnAction.addEventListener('touchstart', (e) => { e.preventDefault(); if(gameRunning) triggerInteraction(); });
+        }
     }
     
     async function init() {
@@ -289,7 +375,15 @@ window.addEventListener('DOMContentLoaded', () => {
         try {
             const assetPromises = [ ...loadAsset(loadSprite, spriteSources), ...loadAsset(loadSound, soundSources) ];
             await Promise.all(assetPromises);
-            startButton.addEventListener('click', () => { introModal.classList.add('hidden'); changeScene(0, player.x, player.y); });
+            startButton.addEventListener('click', () => { 
+                introModal.classList.add('hidden'); 
+                
+                // NEW: Show Toast and Start Game cleanly
+                howToPlayToast.style.opacity = '1';
+                setTimeout(dismissTutorial, 5000); // Auto hide after 5s
+
+                changeScene(0, player.x, player.y); 
+            });
             startButton.textContent = "START";
             startButton.disabled = false;
         } catch (error) {

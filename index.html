@@ -79,6 +79,10 @@
                 <!-- Screen Transition Overlay -->
                 <div id="transitionOverlay" class="absolute inset-0 bg-black z-40 pointer-events-none opacity-0"></div>
 
+                <!-- NEW: How to Play Toast -->
+                <div id="howToPlayToast" class="absolute top-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-slate-200 px-6 py-3 rounded-full shadow-2xl border-2 border-teal-500 opacity-0 transition-opacity duration-500 pointer-events-none z-30 flex items-center gap-3">
+                    <span class="text-xl">🎮</span> Use <span class="text-teal-400 font-bold tracking-widest">W A S D</span> or <span class="text-teal-400 font-bold tracking-widest">ARROWS</span> to move
+                </div>
             </div>
         </section>
 
@@ -154,9 +158,22 @@
         </section>
     </main>
 
-    <!-- Mobile Controls for Game -->
-    <div id="mobile-controls" class="hidden"></div>
-    <button id="action-button" class="hidden"></button>
+    <!-- NEW: Mobile Controls for Game -->
+    <div id="mobile-controls-container" class="hidden absolute inset-0 pointer-events-none z-40 touch-none">
+        <!-- D-PAD -->
+        <div class="absolute bottom-6 left-6 grid grid-cols-3 grid-rows-3 gap-2 pointer-events-auto opacity-70">
+            <div></div>
+            <button id="btn-up" class="mobile-btn w-14 h-14 bg-slate-800 border-2 border-slate-500 rounded shadow-lg flex items-center justify-center text-white active:bg-teal-600 active:border-teal-400">▲</button>
+            <div></div>
+            <button id="btn-left" class="mobile-btn w-14 h-14 bg-slate-800 border-2 border-slate-500 rounded shadow-lg flex items-center justify-center text-white active:bg-teal-600 active:border-teal-400">◀</button>
+            <button id="btn-down" class="mobile-btn w-14 h-14 bg-slate-800 border-2 border-slate-500 rounded shadow-lg flex items-center justify-center text-white active:bg-teal-600 active:border-teal-400">▼</button>
+            <button id="btn-right" class="mobile-btn w-14 h-14 bg-slate-800 border-2 border-slate-500 rounded shadow-lg flex items-center justify-center text-white active:bg-teal-600 active:border-teal-400">▶</button>
+        </div>
+        <!-- ACTION BUTTON -->
+        <div class="absolute bottom-10 right-10 pointer-events-auto opacity-80">
+            <button id="btn-action" class="mobile-btn w-20 h-20 bg-teal-700 border-4 border-teal-400 rounded-full flex items-center justify-center text-white text-2xl font-bold active:bg-teal-500 shadow-xl shadow-teal-900/50">E</button>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
