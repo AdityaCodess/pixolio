@@ -155,7 +155,7 @@ window.addEventListener('DOMContentLoaded', () => {
             catModel.position.sub(center);
 
             // --- ADJUSTED SCALE ---
-            catModel.scale.set(2.5, 2.5, 2.5);
+            catModel.scale.set(5, 5, 5);
 
             threeScene.add(catModel);
             animateCat();
@@ -168,7 +168,7 @@ window.addEventListener('DOMContentLoaded', () => {
             catAnimationId = requestAnimationFrame(animateCat);
             if (catModel) {
                  // --- ADJUSTED ROTATION SPEED ---
-                catModel.rotation.y += 0.02;
+                catModel.rotation.y += 0.08;
             }
             if (threeRenderer && threeScene && threeCamera) {
                 threeRenderer.render(threeScene, threeCamera);

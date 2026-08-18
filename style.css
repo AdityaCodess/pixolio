@@ -39,14 +39,14 @@ display: none;
 
 /* Darker background for the game for more contrast */
 #home {
-background-color: #020617; / slate-950 */
+background-color: #020617; /* slate-950 */
 }
 
 canvas#gameCanvas {
 image-rendering: -moz-crisp-edges;
 image-rendering: -webkit-crisp-edges;
 image-rendering: crisp-edges;
-image-rendering: pixelated;
+image-rendering: pixelated;     
 background-color: #1e293b; /* slate-700 */
 
 /* This robustly scales the canvas while maintaining its aspect ratio */
@@ -81,14 +81,14 @@ font-size: 1rem; /* text-base */
 line-height: 1.75rem;
 }
 
-/* Staggered animation for modal content /
+/* Staggered animation for modal content */
 #modalContent > div > * {
 animation: fadeInUp 0.5s ease-out forwards;
-opacity: 0; / Start hidden /
+opacity: 0; /* Start hidden */
 }
-#modalContent .flex { animation-delay: 0.2s; } / Tags /
-#modalContent p { animation-delay: 0.3s; } / Description /
-#modalContent .pt-2 { animation-delay: 0.4s; } / Buttons */
+#modalContent .flex { animation-delay: 0.2s; } /* Tags */
+#modalContent p { animation-delay: 0.3s; } /* Description */
+#modalContent .pt-2 { animation-delay: 0.4s; } /* Buttons */
 
 /* Updated pixel border to use the new teal accent color - URL ENCODED */
 .pixel-border {
@@ -129,7 +129,7 @@ color: #5eead4;
 color: white;
 font-weight: bold;
 border-color: #14b8a6; /* teal-500 */
-background-color: #0d9488; / teal-600 */
+background-color: #0d9488; /* teal-600 */
 }
 
 /* --- New Terminal & Transition Styles --- */
