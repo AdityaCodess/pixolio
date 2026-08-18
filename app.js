@@ -93,7 +93,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     type: 'easterEgg', name: 'egg1', x: TILE_SIZE * 14, y: TILE_SIZE * 8, width: TILE_SIZE, height: TILE_SIZE,
                     interaction: { 
                         type: 'terminal', 
-                        sound: { name: 'uiiiai_cat', delay: 3000 },
+                        sound: { name: 'uiiiai_cat', delay: 1000 },
                         showCat: true,
                         payload: [ "system.log: Anomaly detected.", "Running diagnostics on 'uiiiai_cat.mp3'...", "Result: File contains 150% of the daily recommended dose of chaos.", "Conclusion: It's not a bug, it's the main character.", "Deploying 3D model..." ] 
                     }
@@ -129,7 +129,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // 1. Create scene, camera, and renderer from scratch
         threeScene = new THREE.Scene();
-        threeCamera = new THREE.PerspectiveCamera(75, catContainer.clientWidth / catContainer.clientHeight, 0.5, 1000);
+        threeCamera = new THREE.PerspectiveCamera(75, catContainer.clientWidth / catContainer.clientHeight, 0.1, 1000);
         threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         threeRenderer.setSize(catContainer.clientWidth, catContainer.clientHeight);
         threeRenderer.setPixelRatio(window.devicePixelRatio);
@@ -142,7 +142,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const dirLight = new THREE.DirectionalLight(0xffffff, 2);
         dirLight.position.set(10, 10, 10);
         threeScene.add(dirLight);
-        threeCamera.position.z = 3;
+
+        // --- ADJUSTED CAMERA POSITION ---
+        threeCamera.position.z = 4;
 
         // 3. Load the model
         const loader = new THREE.GLTFLoader();
@@ -151,9 +153,12 @@ window.addEventListener('DOMContentLoaded', () => {
             const box = new THREE.Box3().setFromObject(catModel);
             const center = box.getCenter(new THREE.Vector3());
             catModel.position.sub(center);
-            catModel.scale.set(5.0, 5.0, 5.0);
-            threeScene.add(catModel); // Add model to the scene
-            animateCat(); // Start animating ONLY after the model is loaded
+
+            // --- ADJUSTED SCALE ---
+            catModel.scale.set(2.5, 2.5, 2.5);
+
+            threeScene.add(catModel);
+            animateCat();
         }, undefined, (error) => {
             console.error('Error loading cat.glb:', error);
             catContainer.innerHTML = '<p class="text-red-500 text-center p-4">Error: Could not load 3D model.</p>';
@@ -162,7 +167,8 @@ window.addEventListener('DOMContentLoaded', () => {
         function animateCat() {
             catAnimationId = requestAnimationFrame(animateCat);
             if (catModel) {
-                catModel.rotation.y += 0.2;
+                 // --- ADJUSTED ROTATION SPEED ---
+                catModel.rotation.y += 0.02;
             }
             if (threeRenderer && threeScene && threeCamera) {
                 threeRenderer.render(threeScene, threeCamera);
@@ -174,12 +180,11 @@ window.addEventListener('DOMContentLoaded', () => {
         if (catAnimationId) {
             cancelAnimationFrame(catAnimationId);
         }
-        // Clean up Three.js resources
         if (threeRenderer) {
             threeRenderer.dispose();
         }
         if (catContainer) {
-            catContainer.innerHTML = ''; // Clear the canvas
+            catContainer.innerHTML = '';
         }
         threeScene = null;
         threeCamera = null;
@@ -272,7 +277,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 currentPlayingSound.currentTime = 0;
                 currentPlayingSound = null;
             }
-            stopCatAnimation(); // Use the new cleanup function
+            stopCatAnimation();
             terminalModal.classList.add('hidden');
             gameRunning = true;
             requestAnimationFrame(gameLoop);
@@ -280,7 +285,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     
     async function init() {
-        // We don't initialize the 3D scene here anymore.
         setupEventListeners();
         try {
             const assetPromises = [ ...loadAsset(loadSprite, spriteSources), ...loadAsset(loadSound, soundSources) ];
@@ -297,4 +301,3 @@ window.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
-
